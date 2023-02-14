@@ -7,7 +7,7 @@ skip_system_packages="${1}"
 os_type="$(uname -s)"
 
 # Keep zsh as last package in the list for apt_packages so that install message makes sense 
-apt_packages="curl git tmux zsh"
+apt_packages="curl git iproute2 python3-pip tmux nano wl-clipboard shellcheck zsh"
 apt_packages_optional="htop"
 
 old_dir="dotfiles_old"
@@ -94,6 +94,8 @@ else
     echo "System package installation was skipped!"
 fi
 
+echo
+
 ###############################################################################
 # Backup old configs
 ###############################################################################
@@ -128,24 +130,6 @@ done
 echo
 
 ###############################################################################
-# Install zsh plugins
-###############################################################################
-
-"${clone_path}/.local/bin/update-zsh-plugins"
-
-###############################################################################
-# Install tpm (tmux plugin manager)
-###############################################################################
-
-if type -p tmux; then
-    rm -rf "${HOME}/.tmux/plugins/tpm"
-    git clone --depth 1 https://github.com/tmux-plugins/tpm "${HOME}/.tmux/plugins/tpm"
-    echo "Installing tpm..."
-else
-    echo "Not installing tpm because tmux is not installed..."
-fi 
-
-###############################################################################
 # Clone dotfiles
 ###############################################################################
 
@@ -173,13 +157,17 @@ git clone https://github.com/p-victor/dotfiles "${clone_path}"
 
 function get_symlinks {
     for config_file in $config_files; do
-        echo "ln -fs "${clone_path}/${config_file}" "${HOME}/${config_file}""
+        if [ -f "${clone_path}/${config_file}" ]; then
+            echo "ln -fs "${clone_path}/${config_file}" "${HOME}/${config_file}""
+        fi
     done
 }
 
 function create_symlinks {
     for config_file in $config_files; do
-        ln -fs "${clone_path}/${config_file}" "${HOME}/${config_file}"
+        if [ -f "${clone_path}/${config_file}" ]; then
+            ln -fs "${clone_path}/${config_file}" "${HOME}/${config_file}"
+        fi
     done
 }
 
@@ -222,14 +210,21 @@ fi
 
 create_symlinks
 
+echo
+
 ###############################################################################
-# Change default shell to zsh
+# Install tpm (tmux plugin manager)
 ###############################################################################
 
-chsh -s "$(command -v zsh)"
+if hash tmux 2>/dev/null; then
+    rm -rf "${HOME}/.tmux/plugins/tpm"
+    git clone --depth 1 https://github.com/tmux-plugins/tpm "${HOME}/.tmux/plugins/tpm"
+    echo "Installing tpm..."
+else
+    echo "Not installing tpm because tmux is not installed..."
+fi 
 
-# shellcheck disable=SC1091
-source "${HOME}/.config/zsh/.zprofile"
+echo
 
 ###############################################################################
 # Install tmux plugins
@@ -237,8 +232,21 @@ source "${HOME}/.config/zsh/.zprofile"
 
 printf "\n\nInstalling tmux plugins...\n"
 
-export TMUX_PLUGIN_MANAGER_PATH="${HOME}/.tmux/plugins"
-"${HOME}/.tmux/plugins/tpm/bin/install_plugins"
+# export TMUX_PLUGIN_MANAGER_PATH="${HOME}/.tmux/plugins"
+# "${HOME}/.tmux/plugins/tpm/bin/install_plugins"
+
+echo
+
+###############################################################################
+# Change default shell to zsh
+###############################################################################
+
+chsh -s "$(command -v zsh)"
+
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+
+# shellcheck disable=SC1091
+source "${HOME}/.config/zsh/.zprofile"
 
 ###############################################################################
 # Done!
