@@ -156,11 +156,14 @@ clone_path="${clone_path:-"${HOME}/dotfiles"}"
 
 # Ensure path doesn't exist.
 while [ -e "${clone_path}" ]; do
-    read -rep $'\nPath exists, try again? (y) ' y
+    read -rep $'\nPath exists, overwrite? (y) ' y
     case "${y}" in
         [Yy]*)
-
+            sudo rm -r ${clone_path}
             break;;
+        [Nn]*) 
+            echo "Exiting ..."
+            exit;;
         *) echo "Please answer y or CTRL+c the script to abort everything";;
     esac
 done
@@ -280,7 +283,26 @@ source "${HOME}/.config/zsh/.zprofile"
 # Install Oh-my-zsh
 ###############################################################################
 
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended --keep-zshrc
+function install_ohmyzsh {
+    sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended --keep-zshrc
+}
+
+if [ -d "${ZSH}" ]; then
+    echo
+    read -rep "There is already a folder at ${ZSH} overwrite? (y) " y
+    case "${y}" in
+        [Yy]*)
+            sudo rm -r ${ZSH}
+            install_ohmyzsh
+            break;;
+        [Nn]*) 
+            echo "Skipping ZSH installation ..."
+            break;;
+        *) echo "Please answer y or CTRL+c the script to abort everything";;
+    esac
+else
+    install_ohmyzsh
+fi
 
 ###############################################################################
 # Done!
