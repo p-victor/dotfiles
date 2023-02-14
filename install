@@ -131,8 +131,6 @@ $(display_old_files)
 
 If you choose no, the files will be overwritten without backup.
 
-The packages listed after zsh are technically optional but are quite useful.
-
 EOF
     while true; do
         read -rp "Backup old dotfiles? (y/n) " yn
@@ -186,6 +184,8 @@ function display_symlinks {
 function create_symlinks {
     for config_file in $config_files; do
         if [ -f "${clone_path}/${config_file}" ]; then
+            dirname="$(dirname $config_file)";
+            mkdir -p ${HOME}/$dirname
             ln -fs "${clone_path}/${config_file}" "${HOME}/${config_file}"
         fi
     done
@@ -273,10 +273,14 @@ echo
 
 chsh -s "$(command -v zsh)"
 
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
-
 # shellcheck disable=SC1091
 source "${HOME}/.config/zsh/.zprofile"
+
+###############################################################################
+# Install Oh-my-zsh
+###############################################################################
+
+sh "${clone_path}/install-oh-my-zsh" --unattended --keep-zshrc
 
 ###############################################################################
 # Done!
@@ -284,10 +288,6 @@ source "${HOME}/.config/zsh/.zprofile"
 
 cat << EOF
 Everything was installed successfully!
-
-Check out the README file on GitHub to do 1 quick thing manually:
-
-https://github.com/nickjj/dotfiles#did-you-install-everything-successfully
 
 You can safely close this terminal.
 
