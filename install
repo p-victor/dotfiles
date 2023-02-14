@@ -12,7 +12,7 @@ apt_packages_optional="htop"
 
 old_dir="dotfiles_old"
 
-config_files=".zshenv .config/zsh/.zshrc .config/zsh/.zprofile .config/zsh/.aliases .gitconfig .gitconfig.user .tmux.conf .local/bin/update-zsh-plugins .local/bin/set-theme"
+config_files=".bash_profile .bashrc .zshenv .config/zsh/.zshrc .config/zsh/.zprofile .config/zsh/.aliases .gitconfig .gitconfig.user .tmux.conf"
 
 ###############################################################################
 # Detect OS and distro type
@@ -250,12 +250,12 @@ echo
 # Install tmux plugins
 ###############################################################################
 
-printf "\n\nInstalling tmux plugins...\n"
-
+# printf "\n\nInstalling tmux plugins...\n"
+# 
 # export TMUX_PLUGIN_MANAGER_PATH="${HOME}/.tmux/plugins"
 # "${HOME}/.tmux/plugins/tpm/bin/install_plugins"
-
-echo
+# 
+# echo
 
 ###############################################################################
 # Install fzf (fuzzy finder on the terminal)
