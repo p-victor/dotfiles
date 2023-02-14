@@ -280,7 +280,7 @@ source "${HOME}/.config/zsh/.zprofile"
 # Install Oh-my-zsh
 ###############################################################################
 
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended --keep-zshrc
 
 ###############################################################################
 # Done!
