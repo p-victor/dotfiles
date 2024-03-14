@@ -12,7 +12,7 @@ apt_packages_optional="htop"
 
 old_dir="dotfiles_old"
 
-config_files=".bash_profile .bashrc .zshenv .config/zsh/.zshrc .config/zsh/.zprofile .config/zsh/.aliases .gitconfig .gitconfig.user .tmux.conf"
+config_files=".bash_profile .bashrc .zshenv .config/zsh .gitconfig .gitconfig.user .tmux.conf"
 
 ###############################################################################
 # Detect OS and distro type
@@ -57,7 +57,7 @@ function apt_install_packages {
 
 function display_packages {
     if [ "${os_type}" == "Linux" ]; then
-        echo -e "Mandatory: ${apt_packages}\n Optional${apt_packages_optional}"
+        echo -e "Mandatory: ${apt_packages}\n\nOptional: ${apt_packages_optional}"
     else
         echo "Error!"
     fi
@@ -73,8 +73,6 @@ $(display_packages)
 If you choose no, the above packages will not be installed and this script
 will exit. This gives you a chance to edit the list of packages if you don't
 agree with any of the decisions.
-
-The packages listed after zsh are technically optional but are quite useful.
 
 EOF
     while true; do
@@ -109,16 +107,14 @@ function display_old_files {
 function backup_old_files {
     for config_file in $config_files; do
         if [ -e "${HOME}/$config_file" ]; then
-            dirname="$(dirname $config_file)";
-            basename="$(basename $config_file)";
             echo "Moving ${HOME}/$config_file to ${HOME}/$old_dir/$current_time/$config_file"
-            mkdir -p ${HOME}/$old_dir/$current_time/$dirname
-            mv ${HOME}/$config_file ${HOME}/$old_dir/$current_time/$config_file
+            mkdir -p "${HOME}/$old_dir/$current_time"
+            cp -Lrt "${HOME}/$old_dir/$current_time/" "${HOME}/$config_file" 
         fi
     done
 }
 
-current_time=$(date "+%Y-%m-%d_%H-%M-%S")
+current_time=$(date "+%d-%m-%Y_%H:%M:%S")
 
 if [ -n "$(display_old_files)" ]; then
 cat << EOF
@@ -149,7 +145,7 @@ echo
 # Clone dotfiles
 ###############################################################################
 
-read -rep $'\nWhere do you want to clone these dotfiles to [~/dotfiles]? ' clone_path
+read -rep $'\nWhere do you want to clone the new dotfiles to (can be anywhere, Default: [~/dotfiles])? ' clone_path
 clone_path="${clone_path:-"${HOME}/dotfiles"}"
 
 # Ensure path doesn't exist.
@@ -162,7 +158,7 @@ while [ -e "${clone_path}" ]; do
         [Nn]*) 
             echo "Exiting ..."
             exit;;
-        *) echo "Please answer y or CTRL+c the script to abort everything";;
+        *) echo "Please answer y, n or CTRL+c the script to abort everything";;
     esac
 done
 
@@ -176,7 +172,7 @@ git clone https://github.com/p-victor/dotfiles "${clone_path}"
 
 function display_symlinks {
     for config_file in $config_files; do
-        if [ -f "${clone_path}/${config_file}" ]; then
+        if [ -e "${clone_path}/${config_file}" ]; then
             echo "ln -fs "${clone_path}/${config_file}" "${HOME}/${config_file}""
         fi
     done
@@ -184,9 +180,10 @@ function display_symlinks {
 
 function create_symlinks {
     for config_file in $config_files; do
-        if [ -f "${clone_path}/${config_file}" ]; then
+        if [ -e "${clone_path}/${config_file}" ]; then
             dirname="$(dirname $config_file)";
-            mkdir -p ${HOME}/$dirname
+            mkdir -p "${HOME}/$dirname"
+            rm -f "${HOME}/${config_file}"
             ln -fs "${clone_path}/${config_file}" "${HOME}/${config_file}"
         fi
     done
@@ -237,6 +234,10 @@ echo
 # Install tpm (tmux plugin manager)
 ###############################################################################
 
+echo
+echo "Installing tpm..."
+echo
+
 if hash tmux 2>/dev/null; then
     rm -rf "${HOME}/.tmux/plugins/tpm"
     git clone --depth 1 https://github.com/tmux-plugins/tpm "${HOME}/.tmux/plugins/tpm"
@@ -245,6 +246,8 @@ else
     echo "Not installing tpm because tmux is not installed..."
 fi 
 
+echo
+echo "Finished installing tpm!"
 echo
 
 ###############################################################################
@@ -262,20 +265,17 @@ echo
 # Install fzf (fuzzy finder on the terminal)
 ###############################################################################
 
+echo
+echo "Installing fzf..."
+echo
+
 rm -rf "${HOME}/.local/share/fzf"
 git clone --depth 1 https://github.com/junegunn/fzf.git "${HOME}/.local/share/fzf" \
   && yes | "${HOME}/.local/share/fzf/install" --bin --no-update-rc
 
 echo
-
-###############################################################################
-# Change default shell to zsh
-###############################################################################
-
-chsh -s "$(command -v zsh)"
-
-# shellcheck disable=SC1091
-source "${HOME}/.config/zsh/.zprofile"
+echo "Finished installing fzf!"
+echo
 
 ###############################################################################
 # Install Oh-my-zsh
@@ -301,6 +301,14 @@ if [ -d "${ZSH}" ]; then
 else
     install_ohmyzsh
 fi
+
+###############################################################################
+# Change default shell to zsh
+###############################################################################
+
+chsh -s "$(command -v zsh)"
+
+source "${HOME}/.config/zsh/.zprofile"
 
 ###############################################################################
 # Powershell commands
