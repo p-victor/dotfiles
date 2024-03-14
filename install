@@ -57,7 +57,7 @@ function apt_install_packages {
 
 function display_packages {
     if [ "${os_type}" == "Linux" ]; then
-        echo "${apt_packages} ${apt_packages_optional}"
+        echo "Mandatory: ${apt_packages}\n Optional${apt_packages_optional}"
     else
         echo "Error!"
     fi
@@ -93,8 +93,6 @@ EOF
 else
     echo "System package installation was skipped!"
 fi
-
-echo
 
 ###############################################################################
 # Backup old configs
@@ -303,6 +301,13 @@ if [ -d "${ZSH}" ]; then
 else
     install_ohmyzsh
 fi
+
+###############################################################################
+# Powershell commands
+###############################################################################
+
+# Install-Module posh-git -Scope CurrentUser
+# Install-Module oh-my-posh -Scope CurrentUser
 
 ###############################################################################
 # Done!
