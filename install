@@ -57,7 +57,7 @@ function apt_install_packages {
 
 function display_packages {
     if [ "${os_type}" == "Linux" ]; then
-        echo "Mandatory: ${apt_packages}\n Optional${apt_packages_optional}"
+        echo -e "Mandatory: ${apt_packages}\n Optional${apt_packages_optional}"
     else
         echo "Error!"
     fi
