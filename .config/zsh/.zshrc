@@ -71,7 +71,7 @@ ZSH_CUSTOM=$ZDOTDIR/custom
 # Add wisely, as too many plugins slow down shell startup.
 
 ZSH_TMUX_AUTOSTART='true'
-plugins=(git, tmux)
+plugins=(git tmux)
 
 source $ZSH/oh-my-zsh.sh
 
