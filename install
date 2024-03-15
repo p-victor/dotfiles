@@ -12,7 +12,7 @@ apt_packages_optional="htop"
 
 old_dir="dotfiles_old"
 
-config_files=".bash_profile .bashrc .zshenv .config/zsh .gitconfig .gitconfig.user .tmux.conf"
+config_files=".bash_profile .bashrc .zshenv .config/zsh .config/tmux .gitconfig .gitconfig.user .tmux.conf"
 
 ###############################################################################
 # Detect OS and distro type
