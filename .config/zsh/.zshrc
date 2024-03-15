@@ -70,7 +70,6 @@ ZSH_CUSTOM=$ZDOTDIR/custom
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
 
-ZSH_TMUX_AUTOSTART='true'
 plugins=(git tmux)
 
 source $ZSH/oh-my-zsh.sh
@@ -94,3 +93,5 @@ export LANG=en_US.UTF-8
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 alias zshconfig="${EDITOR} ${ZDOTDIR}/.zshrc"
+
+source $HOME/.tmux.conf
