@@ -17,4 +17,4 @@ bash <(curl -sS https://raw.githubusercontent.com/p-victor/dotfiles/master/insta
 TODO:
 -add windows scripts for fonts
 -add tmux bindings and configs
--
+-write about XDG standards in README.md for maintenance
