@@ -5,9 +5,11 @@ set -e
 skip_system_packages="${1}"
 
 os_type="$(uname -s)"
+current_time=$(date "+%d-%m-%Y_%H:%M:%S")
+
 
 # Keep zsh as last package in the list for apt_packages so that install message makes sense 
-apt_packages="curl git iproute2 python3-pip tmux nano wl-clipboard shellcheck zsh fonts-powerline"
+apt_packages="curl git iproute2 python3-pip tmux nano wl-clipboard shellcheck fonts-powerline zsh "
 apt_packages_optional="htop"
 
 old_dir="dotfiles_old"
@@ -15,7 +17,7 @@ old_dir="dotfiles_old"
 config_files=".bash_profile .bashrc .zshenv .config/zsh .config/tmux .config/tmux-powerline .gitconfig .gitconfig.user .tmux.conf"
 
 ###############################################################################
-# Detect OS and distro type
+# Functions
 ###############################################################################
 
 function no_system_packages() {
@@ -30,32 +32,30 @@ EOF
 exit 1
 }
 
-case "${os_type}" in
-    Linux*)
-        os_type="Linux"
+function verify_os() {
+    case "${os_type}" in
+        Linux*)
+            os_type="Linux"
 
-        if [ !  -f "/etc/debian_version" ]; then
+            if [ !  -f "/etc/debian_version" ]; then
+                [ -z "${skip_system_packages}" ] && no_system_packages
+            fi
+
+            ;;
+        *)
+            os_type="Other"
+
             [ -z "${skip_system_packages}" ] && no_system_packages
-        fi
 
-        ;;
-    *)
-        os_type="Other"
+            ;;
+    esac
+}
 
-        [ -z "${skip_system_packages}" ] && no_system_packages
-
-        ;;
-esac
-
-###############################################################################
-# Install packages using your OS' package manager
-###############################################################################
-
-function apt_install_packages {
+function apt_install_system_packages() {
     sudo apt-get update && sudo apt-get install -y ${apt_packages} ${apt_packages_optional}
 }
 
-function display_packages {
+function display_packages() {
     if [ "${os_type}" == "Linux" ]; then
         echo -e "Mandatory: ${apt_packages}\n\nOptional: ${apt_packages_optional}"
     else
@@ -63,6 +63,7 @@ function display_packages {
     fi
 }
 
+function prompt_install_system_packages() {
 if [ -z "${skip_system_packages}" ]; then
 cat << EOF
 
@@ -75,6 +76,7 @@ will exit. This gives you a chance to edit the list of packages if you don't
 agree with any of the decisions.
 
 EOF
+
     while true; do
         read -rp "Do you want to install the above packages? (y/n) " yn
         case "${yn}" in
@@ -91,10 +93,7 @@ EOF
 else
     echo "System package installation was skipped!"
 fi
-
-###############################################################################
-# Backup old configs
-###############################################################################
+}
 
 function display_old_files {
     for config_file in $config_files; do
@@ -114,8 +113,7 @@ function backup_old_files {
     done
 }
 
-current_time=$(date "+%d-%m-%Y_%H:%M:%S")
-
+function prompt_backup_configs() {
 if [ -n "$(display_old_files)" ]; then
 cat << EOF
 
@@ -140,35 +138,68 @@ EOF
     done
 fi
 echo
+}
 
-###############################################################################
-# Clone dotfiles
-###############################################################################
-
+function prompt_clone_dotfiles() {
 read -rep $'\nWhere do you want to clone the new dotfiles to (can be anywhere, Default: [~/dotfiles])? ' clone_path
 clone_path="${clone_path:-"${HOME}/dotfiles"}"
 
 # Ensure path doesn't exist.
-while [ -e "${clone_path}" ]; do
-    read -rep $'\nPath exists, overwrite? (y) ' y
-    case "${y}" in
-        [Yy]*)
-            sudo rm -r ${clone_path}
-            break;;
-        [Nn]*) 
-            echo "Exiting ..."
-            exit;;
-        *) echo "Please answer y, n or CTRL+c the script to abort everything";;
-    esac
-done
-
-echo
-
-git clone git@github.com:p-victor/dotfiles.git "${clone_path}"
-
-###############################################################################
-# Carefully create symlinks
-###############################################################################
+if [ -e "${clone_path}" ]; then
+    if [ "${clone_path}" = "$(git rev-parse --show-toplevel)" ]; then
+        
+        while true; do
+            echo "Path exists and is a git repository, choose an option:"
+            echo "1) Pull dotfiles"
+            echo "2) Overwrite dotfiles"
+            echo
+            echo "a) Abort and go back to the menu"
+            echo "q) Quit"
+            read -rep $'\nPath exists and is a git repository, do you want to pull instead? (yn) ' option
+            case "${option}" in
+                [1]*)
+                    echo
+                    echo "Pulling dotfiles in ${clone_path}"
+                    git -C "${clone_path}" pull
+                    break;;
+                [2]*)
+                    sudo rm -r ${clone_path}
+                    echo
+                    echo "Cloning dotfiles to ${clone_path}"
+                    git clone git@github.com:p-victor/dotfiles.git "${clone_path}"
+                    break;;
+                [aA]*)
+                    menu
+                    break;;
+                [Qq]*)
+                    echo "Exiting ..."
+                    exit;;
+                *) echo "Please enter a valid answer";;
+            esac
+        done
+    else
+        while true; do
+            read -rep $'\nPath exists, overwrite? (yn) ' option
+            case "${option}" in
+                [Yy]*)
+                    sudo rm -r ${clone_path}
+                    echo
+                    echo "Cloning dotfiles to ${clone_path}"
+                    git clone git@github.com:p-victor/dotfiles.git "${clone_path}"
+                    break;;
+                [Nn]*) 
+                    echo "Exiting ..."
+                    exit;;
+                *) echo "Please answer y, n or CTRL+c the script to abort everything";;
+            esac
+        done
+    fi
+else
+    echo
+    echo "Cloning dotfiles to ${clone_path}"
+    git clone git@github.com:p-victor/dotfiles.git "${clone_path}"
+fi
+}
 
 function display_symlinks {
     for config_file in $config_files; do
@@ -184,11 +215,13 @@ function create_symlinks {
             dirname="$(dirname $config_file)";
             mkdir -p "${HOME}/$dirname"
             rm -f "${HOME}/${config_file}"
+            echo "ln -fs "${clone_path}/${config_file}" "${HOME}/${config_file}""
             ln -fs "${clone_path}/${config_file}" "${HOME}/${config_file}"
         fi
     done
 }
 
+function prompt_create_symlinks() {
 cat << EOF
 
 -------------------------------------------------------------------------------
@@ -223,17 +256,15 @@ while true; do
 done
 
 if grep -qE "(Microsoft|microsoft|WSL)" /proc/version &>/dev/null; then
+    echo "ln -fs "${clone_path}/${config_file}" "${HOME}/${config_file}""
     sudo ln -fs "${clone_path}/etc/wsl.conf" /etc/wsl.conf
 fi
 
 create_symlinks
-
 echo
+}
 
-###############################################################################
-# Install tpm (tmux plugin manager)
-###############################################################################
-
+function install_tpm() {
 echo
 echo "Installing tpm..."
 echo
@@ -249,22 +280,9 @@ fi
 echo
 echo "Finished installing tpm!"
 echo
+}
 
-###############################################################################
-# Install tmux plugins
-###############################################################################
-
-# printf "\n\nInstalling tmux plugins...\n"
-# 
-# export TMUX_PLUGIN_MANAGER_PATH="${HOME}/.tmux/plugins"
-# "${HOME}/.tmux/plugins/tpm/bin/install_plugins"
-# 
-# echo
-
-###############################################################################
-# Install fzf (fuzzy finder on the terminal)
-###############################################################################
-
+function install_fzf() {
 echo
 echo "Installing fzf..."
 echo
@@ -276,15 +294,13 @@ git clone --depth 1 https://github.com/junegunn/fzf.git "${HOME}/.local/share/fz
 echo
 echo "Finished installing fzf!"
 echo
-
-###############################################################################
-# Install Oh-my-zsh
-###############################################################################
+}
 
 function install_ohmyzsh {
     sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended --keep-zshrc
 }
 
+function check_ohmyzsh() {
 if [ -d "${ZSH}" ]; then
     echo
     read -rep "There is already a folder at ${ZSH} overwrite? (y) " y
@@ -301,10 +317,9 @@ if [ -d "${ZSH}" ]; then
 else
     install_ohmyzsh
 fi
+}
 
-###############################################################################
-# Install powerline
-###############################################################################
+function install_powerline() {
 echo
 echo "Installing powerline..."
 echo
@@ -314,25 +329,11 @@ pip3 install --user powerline-status
 echo
 echo "Finished installing powerline!"
 echo
+}
 
-###############################################################################
-# Change default shell to zsh
-###############################################################################
-
+function change_default_shell() {
 chsh -s "$(command -v zsh)"
-
 source "${HOME}/.config/zsh/.zprofile"
-
-###############################################################################
-# Powershell commands
-###############################################################################
-
-# Install-Module posh-git -Scope CurrentUser
-# Install-Module oh-my-posh -Scope CurrentUser
-
-###############################################################################
-# Done!
-###############################################################################
 
 cat << EOF
 Everything was installed successfully!
@@ -341,5 +342,52 @@ You can safely close this terminal.
 
 The next time you open your terminal zsh will be ready to go!
 EOF
+echo
+}
+
+function full_install() {
+    verify_os
+    prompt_install_system_packages
+    prompt_backup_configs
+    prompt_clone_dotfiles
+    install_tpm
+    install_fzf
+    check_ohmyzsh
+    install_powerline
+    change_default_shell
+}
+
+function menu() {
+    
+    while true; do
+        echo What would you like to do?
+        echo "1) Full install"
+        echo "2) Backup old configs"
+        echo "3) Update dotfiles"
+        echo 
+        echo "q) Quit"
+        echo
+        read -rp "Choose an option: " option
+        case "${option}" in
+            [1]*)
+                full_install
+                break;;
+            [2]*) 
+                prompt_backup_configs
+                menu;;
+            [3]*)
+                prompt_clone_dotfiles
+                prompt_create_symlinks
+                menu;;
+            [qQ]*)
+                echo "Exiting ..."
+                exit 0;;
+            *) 
+                echo "Please enter a valid answer or q to quit";;
+        esac
+    done
+}
+
+menu
 
 exit 0
