@@ -72,10 +72,12 @@ ZSH_CUSTOM=$ZDOTDIR/custom
 
 plugins=(git tmux)
 
+# This line has to be between the plugins and source $ZSH/oh-my-zsh.sh lines
+ZSH_TMUX_AUTOSTART=true
+
 source $ZSH/oh-my-zsh.sh
 
 # User configuration
-
 export MANPATH="/usr/local/man:$MANPATH"
 
 # You may need to manually set your language environment
