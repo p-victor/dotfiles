@@ -13,3 +13,8 @@ You can also run the script without installing system packages:
 ```
 bash <(curl -sS https://raw.githubusercontent.com/p-victor/dotfiles/master/install) --skip-system-packages
 ```
+
+TODO:
+-add windows scripts for fonts
+-add tmux bindings and configs
+-
