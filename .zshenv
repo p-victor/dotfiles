@@ -1,2 +1,5 @@
-export XDG_CONFIG_HOME="${HOME}/.config"
+# Load common setup
+if [[ -f $HOME/.config/profile/.profile ]]; then
+    source $HOME/.config/profile/.profile
+fi
 export ZDOTDIR="${XDG_CONFIG_HOME}/zsh"

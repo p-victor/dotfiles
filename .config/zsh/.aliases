@@ -1,16 +1,31 @@
-weather () {
-    curl "https://wttr.in/${1}"
-}
-
-alias ll="ls -alF"
-alias la="ls -A"
-alias l="ls -CF"
-
 alias diff="diff --color -u"
 
-alias gcl="git diff --name-only --diff-filter=U"
+# Cd shortcuts (allows .. to be read as cd .. and ... as cd ../.., etc...)
+setopt auto_cd
+
+# Zsh config file
+alias zshconfig="${EDITOR} ${ZDOTDIR}/.zshrc"
+
+# List all files colorized in long format, including dot files
+alias l="ls -laF --color=auto"
+alias ls="ls --color=auto"
+
+# nvim
+alias vim="nvim"
+alias vi="nvim"
+
+# Git aliases
+alias gst="git status"
+alias gco="git checkout"
+alias gcm="git commit -m"
+alias ga="git add"
+alias gaa="git add ."
+alias glog="git log --oneline --decorate --all --graph"
+alias gdiff="git diff"
+alias gpull="git pull"
+alias gpush="git push"
 
 # This is specific to WSL 2. If the WSL 2 VM goes rogue and decides not to free
 # up memory, this command will free your memory after about 20-30 seconds.
-#   Details: https://github.com/microsoft/WSL/issues/4166#issuecomment-628493643
+# Details: https://github.com/microsoft/WSL/issues/4166#issuecomment-628493643
 alias drop_cache="sudo sh -c \"echo 3 >'/proc/sys/vm/drop_caches' && swapoff -a && swapon -a && printf '\n%s\n' 'Ram-cache and Swap Cleared'\""

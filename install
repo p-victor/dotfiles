@@ -9,12 +9,14 @@ current_time=$(date "+%d-%m-%Y_%H:%M:%S")
 
 
 # Keep zsh as last package in the list for apt_packages so that install message makes sense 
-apt_packages="curl git iproute2 python3-pip tmux nano wl-clipboard shellcheck fonts-powerline zsh "
+apt_packages="curl git iproute2 python3-pip tmux nano nvim wl-clipboard shellcheck fonts-powerline zsh "
 apt_packages_optional="htop"
 
 old_dir="dotfiles_old"
 
-config_files=".bash_profile .bashrc .zshenv .config/zsh .config/tmux .config/tmux-powerline .gitconfig .gitconfig.user .tmux.conf"
+xdg_directories=".config .local/share .local/state .cache"
+
+config_files=".profile .zshenv .config/zsh .config/tmux .config/tmux-powerline .config/git .config/bash .config/nvim .config/profile"
 
 ###############################################################################
 # Functions
@@ -82,7 +84,7 @@ EOF
         case "${yn}" in
             [Yy]*)
                 if [ "${os_type}" == "Linux" ]; then
-                    apt_install_packages
+                    apt_install_system_packages
                 fi
 
                 break;;
@@ -143,11 +145,11 @@ echo
 function prompt_clone_dotfiles() {
 read -rep $'\nWhere do you want to clone the new dotfiles to (can be anywhere, Default: [~/dotfiles])? ' clone_path
 clone_path="${clone_path:-"${HOME}/dotfiles"}"
+echo
 
 # Ensure path doesn't exist.
 if [ -e "${clone_path}" ]; then
-    if [ "${clone_path}" = "$(git rev-parse --show-toplevel)" ]; then
-        
+    if git -C "${clone_path}" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
         while true; do
             echo "Path exists and is a git repository, choose an option:"
             echo "1) Pull dotfiles"
@@ -155,11 +157,12 @@ if [ -e "${clone_path}" ]; then
             echo
             echo "a) Abort and go back to the menu"
             echo "q) Quit"
-            read -rep $'\nPath exists and is a git repository, do you want to pull instead? (yn) ' option
+            read -rep $'\nChoose an option: ' option
+            echo
             case "${option}" in
                 [1]*)
                     echo
-                    echo "Pulling dotfiles in ${clone_path}"
+                    echo "Pulling dotfiles in ${clone_path}..."
                     git -C "${clone_path}" pull
                     break;;
                 [2]*)
@@ -180,6 +183,7 @@ if [ -e "${clone_path}" ]; then
     else
         while true; do
             read -rep $'\nPath exists, overwrite? (yn) ' option
+            echo
             case "${option}" in
                 [Yy]*)
                     sudo rm -r ${clone_path}
@@ -214,7 +218,7 @@ function create_symlinks {
         if [ -e "${clone_path}/${config_file}" ]; then
             dirname="$(dirname $config_file)";
             mkdir -p "${HOME}/$dirname"
-            rm -f "${HOME}/${config_file}"
+            rm -rf "${HOME}/${config_file}"
             echo "ln -fs "${clone_path}/${config_file}" "${HOME}/${config_file}""
             ln -fs "${clone_path}/${config_file}" "${HOME}/${config_file}"
         fi
@@ -249,19 +253,28 @@ while true; do
   read -rep $'\nReady to continue and apply the symlinks? (y) ' y
   case "${y}" in
       [Yy]*)
-
           break;;
       *) echo "Please answer y or CTRL+c the script to abort everything";;
   esac
 done
 
+create_symlinks
+
 if grep -qE "(Microsoft|microsoft|WSL)" /proc/version &>/dev/null; then
-    echo "ln -fs "${clone_path}/${config_file}" "${HOME}/${config_file}""
+    echo "ln -fs "${clone_path}/etc/wsl.conf" "/etc/wsl.conf""
     sudo ln -fs "${clone_path}/etc/wsl.conf" /etc/wsl.conf
 fi
 
-create_symlinks
 echo
+}
+
+function create_xdg_directories() {
+    for xdg_directory in $xdg_directories; do
+        if [ ! -d "${HOME}/${xdg_directory}" ]; then
+            mkdir -p "${HOME}/${xdg_directory}"
+        fi
+    done
+    source "${HOME}/.config/profile/.profile"
 }
 
 function install_tpm() {
@@ -289,7 +302,7 @@ echo
 
 rm -rf "${HOME}/.local/share/fzf"
 git clone --depth 1 https://github.com/junegunn/fzf.git "${HOME}/.local/share/fzf" \
-  && yes | "${HOME}/.local/share/fzf/install" --bin --no-update-rc
+  && yes | "${HOME}/.local/share/fzf/install" --no-update-rc --xdg
 
 echo
 echo "Finished installing fzf!"
@@ -300,7 +313,7 @@ function install_ohmyzsh {
     sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended --keep-zshrc
 }
 
-function check_ohmyzsh() {
+function check_and_install_ohmyzsh() {
 if [ -d "${ZSH}" ]; then
     echo
     read -rep "There is already a folder at ${ZSH} overwrite? (y) " y
@@ -350,15 +363,16 @@ function full_install() {
     prompt_install_system_packages
     prompt_backup_configs
     prompt_clone_dotfiles
+    create_xdg_directories
+    prompt_create_symlinks
     install_tpm
     install_fzf
-    check_ohmyzsh
+    #check_and_install_ohmyzsh
     install_powerline
     change_default_shell
 }
 
 function menu() {
-    
     while true; do
         echo What would you like to do?
         echo "1) Full install"
@@ -368,6 +382,7 @@ function menu() {
         echo "q) Quit"
         echo
         read -rp "Choose an option: " option
+        echo
         case "${option}" in
             [1]*)
                 full_install
@@ -377,6 +392,7 @@ function menu() {
                 menu;;
             [3]*)
                 prompt_clone_dotfiles
+                create_xdg_directories
                 prompt_create_symlinks
                 menu;;
             [qQ]*)
