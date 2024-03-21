@@ -9,7 +9,7 @@ current_time=$(date "+%d-%m-%Y_%H:%M:%S")
 
 
 # Keep zsh as last package in the list for apt_packages so that install message makes sense 
-apt_packages="curl git iproute2 python3-pip tmux nano nvim wl-clipboard shellcheck fonts-powerline zsh "
+apt_packages="curl git iproute2 python3-pip tmux nano neovim wl-clipboard shellcheck fd-find zsh zsh-antigen"
 apt_packages_optional="htop"
 
 old_dir="dotfiles_old"
@@ -283,8 +283,8 @@ echo "Installing tpm..."
 echo
 
 if hash tmux 2>/dev/null; then
-    rm -rf "${HOME}/.tmux/plugins/tpm"
-    git clone --depth 1 https://github.com/tmux-plugins/tpm "${HOME}/.tmux/plugins/tpm"
+    rm -rf "${HOME}/.config/tmux/plugins/tpm"
+    git clone --depth 1 https://github.com/tmux-plugins/tpm "${HOME}/.config/tmux/plugins/tpm"
     echo "Installing tpm..."
 else
     echo "Not installing tpm because tmux is not installed..."
@@ -363,8 +363,8 @@ function full_install() {
     prompt_install_system_packages
     prompt_backup_configs
     prompt_clone_dotfiles
-    create_xdg_directories
     prompt_create_symlinks
+    create_xdg_directories
     install_tpm
     install_fzf
     #check_and_install_ohmyzsh
@@ -392,8 +392,8 @@ function menu() {
                 menu;;
             [3]*)
                 prompt_clone_dotfiles
-                create_xdg_directories
                 prompt_create_symlinks
+                create_xdg_directories
                 menu;;
             [qQ]*)
                 echo "Exiting ..."

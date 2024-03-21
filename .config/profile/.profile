@@ -30,10 +30,6 @@ export PYTHONUSERBASE="${XDG_DATA_HOME}/python"
 export PYTHON_HISTORY="${XDG_STATE_HOME}/python/history"
 export PYTHONUSERBASE="${XDG_DATA_HOME}/python"
 
-# Set up the default directories for Vim.
-export GVIMINIT='let $MYGVIMRC="$XDG_CONFIG_HOME/vim/gvimrc" | source $MYGVIMRC'
-export VIMINIT='let $MYVIMRC="$XDG_CONFIG_HOME/vim/vimrc" | source $MYVIMRC'
-
 # Default programs to run.
 export EDITOR="nvim"
 
