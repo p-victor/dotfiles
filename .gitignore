@@ -1,3 +1,4 @@
 .zcompdump*
 .config/tmux/plugins/*
 .config/zsh/plugins
+.config/zsh/antigen.zsh

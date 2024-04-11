@@ -309,28 +309,11 @@ echo "Finished installing fzf!"
 echo
 }
 
-function install_ohmyzsh {
-    sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended --keep-zshrc
+function install_antigen() {
+    rm -rf "${HOME}/.config/zsh/antigen.zsh"
+    curl -L git.io/antigen > "${HOME}/.config/zsh/antigen.zsh"
 }
 
-function check_and_install_ohmyzsh() {
-if [ -d "${ZSH}" ]; then
-    echo
-    read -rep "There is already a folder at ${ZSH} overwrite? (y) " y
-    case "${y}" in
-        [Yy]*)
-            sudo rm -r ${ZSH}
-            install_ohmyzsh
-            break;;
-        [Nn]*) 
-            echo "Skipping ZSH installation ..."
-            break;;
-        *) echo "Please answer y or CTRL+c the script to abort everything";;
-    esac
-else
-    install_ohmyzsh
-fi
-}
 
 function install_powerline() {
 echo
@@ -367,7 +350,7 @@ function full_install() {
     create_xdg_directories
     install_tpm
     install_fzf
-    #check_and_install_ohmyzsh
+    install_antigen
     install_powerline
     change_default_shell
 }

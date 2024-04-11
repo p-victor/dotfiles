@@ -5,6 +5,22 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
+# Create plugins directory
+[ -d $ZDOTDIR/plugins ] || mkdir -p $ZDOTDIR/plugins
+# Clone plugins
+if [[ ! -d $ZDOTDIR/plugins/zsh-completions ]]; then
+  git clone https://github.com/zsh-users/zsh-completions.git $ZDOTDIR/plugins/zsh-completions
+fi
+fpath=($ZDOTDIR/plugin/zsh-completions/src $fpath)
+if [[ ! -d $ZDOTDIR/plugins/zsh-syntax-highlighting ]]; then
+  git clone https://github.com/zsh-users/zsh-syntax-highlighting.git $ZDOTDIR/plugins/zsh-syntax-highlighting
+fi
+# Load plugins
+source $ZDOTDIR/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+# Bind autosuggest-accept widget to Ctrl-Space
+bindkey '^ ' autosuggest-accept
+export ZSH_AUTOSUGGEST_STRATEGY=(completion history)
+
 
 # Setup XDG directories
 # History file
@@ -12,17 +28,27 @@ fi
 # Completion files
 [ -d "$XDG_CACHE_HOME"/zsh ] || mkdir -p "$XDG_CACHE_HOME"/zsh
 zstyle ':completion:*' cache-path "$XDG_CACHE_HOME"/zsh/zcompcache
+# Start with a clean completion cache
+autoload -U compinit && compinit -d "$XDG_CACHE_HOME"/zsh/zcompdump-$ZSH_VERSION
 
 # History configuration
-setopt EXTENDED_HISTORY
-setopt INC_APPEND_HISTORY
-setopt SHARE_HISTORY
 export HISTFILE="$XDG_STATE_HOME/zsh/history"
-export HISTSIZE=500000
+export HISTSIZE=10000000
 export SAVEHIST=$HISTSIZE
+setopt BANG_HIST                 # Treat the '!' character specially during expansion.
+setopt EXTENDED_HISTORY          # Write the history file in the ":start:elapsed;command" format.
+setopt INC_APPEND_HISTORY        # Write to the history file immediately, not when the shell exits.
+setopt SHARE_HISTORY             # Share history between all sessions.
+setopt HIST_EXPIRE_DUPS_FIRST    # Expire duplicate entries first when trimming history.
+setopt HIST_IGNORE_DUPS          # Don't record an entry that was just recorded again.
+setopt HIST_IGNORE_ALL_DUPS      # Delete old recorded entry if new entry is a duplicate.
+setopt HIST_FIND_NO_DUPS         # Do not display a line previously found.
+setopt HIST_IGNORE_SPACE         # Don't record an entry starting with a space.
+setopt HIST_SAVE_NO_DUPS         # Don't write duplicate entries in the history file.
+setopt HIST_REDUCE_BLANKS        # Remove superfluous blanks before recording entry.
+setopt HIST_VERIFY               # Don't execute immediately upon history expansion.
+setopt HIST_BEEP                 # Beep when accessing nonexistent history.
 
-# Start completion
-autoload - U compinit && compinit -d "$XDG_CACHE_HOME"/zsh/zcompdump-$ZSH_VERSION
 
 # Load aliases if they exist.
 [ -f "${XDG_CONFIG_HOME}/zsh/.aliases" ] && . "${XDG_CONFIG_HOME}/zsh/.aliases"
@@ -46,7 +72,6 @@ export FZF_DEFAULT_OPTS='
 export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
 export FZF_ALT_C_OPTS="
   --walker-skip .git,node_modules,target"
-
 
 # Load Powerlevel10k theme
 source $ZDOTDIR/plugins/powerlevel10k/powerlevel10k.zsh-theme
