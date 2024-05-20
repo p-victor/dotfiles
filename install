@@ -326,7 +326,7 @@ echo
 echo "Installing powerlevel10k..."
 echo
 
-rm -rf "${HOME}/.config/zsh/themes/powerlevel10k"
+rm -rf "${HOME}/.config/zsh/plugins/powerlevel10k"
 git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "${HOME}/.config/zsh/plugins/powerlevel10k"
 
 echo
