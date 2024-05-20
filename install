@@ -309,12 +309,6 @@ echo "Finished installing fzf!"
 echo
 }
 
-function install_antigen() {
-    rm -rf "${HOME}/.config/zsh/antigen.zsh"
-    curl -L git.io/antigen > "${HOME}/.config/zsh/antigen.zsh"
-}
-
-
 function install_powerline() {
 echo
 echo "Installing powerline..."
@@ -324,6 +318,19 @@ pip3 install --user powerline-status
 
 echo
 echo "Finished installing powerline!"
+echo
+}
+
+function install_powerlevel10k() {
+echo
+echo "Installing powerlevel10k..."
+echo
+
+rm -rf "${HOME}/.config/zsh/themes/powerlevel10k"
+git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "${HOME}/.config/zsh/plugins/powerlevel10k"
+
+echo
+echo "Finished installing powerlevel10k!"
 echo
 }
 
@@ -350,8 +357,8 @@ function full_install() {
     create_xdg_directories
     install_tpm
     install_fzf
-    install_antigen
     install_powerline
+    install_powerlevel10k
     change_default_shell
 }
 

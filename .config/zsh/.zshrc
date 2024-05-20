@@ -9,17 +9,16 @@ fi
 [ -d $ZDOTDIR/plugins ] || mkdir -p $ZDOTDIR/plugins
 # Clone plugins
 if [[ ! -d $ZDOTDIR/plugins/zsh-completions ]]; then
+  echo "Cloning zsh-completions"
   git clone https://github.com/zsh-users/zsh-completions.git $ZDOTDIR/plugins/zsh-completions
 fi
 fpath=($ZDOTDIR/plugin/zsh-completions/src $fpath)
 if [[ ! -d $ZDOTDIR/plugins/zsh-syntax-highlighting ]]; then
+  echo "Cloning zsh-syntax-highlighting"
   git clone https://github.com/zsh-users/zsh-syntax-highlighting.git $ZDOTDIR/plugins/zsh-syntax-highlighting
 fi
 # Load plugins
 source $ZDOTDIR/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-# Bind autosuggest-accept widget to Ctrl-Space
-bindkey '^ ' autosuggest-accept
-export ZSH_AUTOSUGGEST_STRATEGY=(completion history)
 
 
 # Setup XDG directories
