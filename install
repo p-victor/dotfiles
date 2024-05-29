@@ -334,6 +334,21 @@ echo "Finished installing powerlevel10k!"
 echo
 }
 
+function install_fd() {
+echo
+echo "Installing fd..."
+echo
+
+wget https://github.com/sharkdp/fd/releases/download/v10.1.0/fd_10.1.0_amd64.deb
+dpkg -i fd_9.0.0_amd64.deb
+rm -f fd_10.1.0_amd64.deb
+
+echo
+echo "Finished installing fd!"
+echo
+}
+
+
 function change_default_shell() {
 chsh -s "$(command -v zsh)"
 source "${HOME}/.config/zsh/.zprofile"
@@ -359,6 +374,8 @@ function full_install() {
     install_fzf
     install_powerline
     install_powerlevel10k
+    #temporary install of fd until better Ubuntu support (need version 9 I think...)
+    install_fd
     change_default_shell
 }
 

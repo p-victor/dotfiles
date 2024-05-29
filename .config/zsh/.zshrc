@@ -5,7 +5,7 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
-# Create plugins directory
+# Create plugins directory if non-existent
 [ -d $ZDOTDIR/plugins ] || mkdir -p $ZDOTDIR/plugins
 # Clone plugins
 if [[ ! -d $ZDOTDIR/plugins/zsh-completions ]]; then
@@ -58,19 +58,17 @@ export LANG=en_US.UTF-8
 
 # Setup fzf
 # ---------
-if [[ ! "$PATH" == */home/p-victor/.local/share/fzf/bin* ]]; then
-  PATH="${PATH:+${PATH}:}/home/p-victor/.local/share/fzf/bin"
+if [[ ! "$PATH" == *${XDG_DATA_HOME}/fzf/bin* ]]; then
+  PATH="${PATH:+${PATH}:}${XDG_DATA_HOME}/fzf/bin"
 fi
 
 eval "$(fzf --zsh)"
 
 #FZF keybindings and settings
-export FZF_DEFAULT_COMMAND='fdfind --strip-cwd-prefix --type f --hidden --follow --exclude .git'
+export FZF_DEFAULT_COMMAND='fd --strip-cwd-prefix --type f --hidden --follow --exclude .git'
 export FZF_DEFAULT_OPTS='
   --height 40% --layout=reverse --border'
 export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
-export FZF_ALT_C_OPTS="
-  --walker-skip .git,node_modules,target"
 
 # Load Powerlevel10k theme
 source $ZDOTDIR/plugins/powerlevel10k/powerlevel10k.zsh-theme
