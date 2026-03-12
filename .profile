@@ -17,3 +17,6 @@ fi
 
 export NVM_DIR="$HOME/.config/nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+
+# Created by `pipx` on 2026-03-12 21:37:01
+export PATH="$PATH:/home/poiri/.local/bin"
