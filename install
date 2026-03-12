@@ -9,7 +9,7 @@ current_time=$(date "+%d-%m-%Y_%H:%M:%S")
 
 
 # Keep zsh as last package in the list for apt_packages so that install message makes sense 
-apt_packages="curl git iproute2 python3-pip tmux nano neovim wl-clipboard shellcheck fd-find zsh zsh-antigen"
+apt_packages="curl git iproute2 pipx tmux nano neovim wl-clipboard shellcheck fd-find zsh zsh-antigen"
 apt_packages_optional="htop"
 
 old_dir="dotfiles_old"
@@ -314,7 +314,7 @@ echo
 echo "Installing powerline..."
 echo
 
-pip3 install --user powerline-status
+pipx install powerline-status
 
 echo
 echo "Finished installing powerline!"
